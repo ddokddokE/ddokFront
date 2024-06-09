@@ -8,7 +8,7 @@ export async function getMedicineInfo(name) {
     try {
         const response = await axios({
             method: "get",
-            url: host + `/medicine/search`,
+            url: host + `/medicine/search?`,
             params: { name }
         });
         return response.data;

@@ -1,72 +1,68 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Platform, PermissionsAndroid, Alert } from 'react-native';
 import AppHeader from '../components/HeaderComponent';
 import useSpeakOnFocus from '../utils/DescriptionUtil';
-
 import { CameraScreen } from 'react-native-camera-kit';
 
 const CameraSearchScreen = ({ navigation }) => {
+  const [qrvalue, setQrvalue] = useState('');
+  const [openScanner, setOpenScanner] = useState(false);
 
   useSpeakOnFocus('카메라로 의약품을 검색하는 화면입니다.');
 
-  const onBarcodeScan = (qrvalue) => {
-    // Called after te successful scanning of QRCode/Barcode
-    setQrvalue(qrvalue);
-    setOpneScanner(false);
-  };
-
-  const onOpneScanner = () => {
-    // To Start Scanning
-    if (Platform.OS === 'android') {
-      async function requestCameraPermission() {
+  useEffect(() => {
+    const requestCameraPermission = async () => {
+      if (Platform.OS === 'android') {
         try {
           const granted = await PermissionsAndroid.request(
             PermissionsAndroid.PERMISSIONS.CAMERA,
             {
               title: 'Camera Permission',
               message: 'App needs permission for camera access',
-            },
+            }
           );
           if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-            // If CAMERA Permission is granted
             setQrvalue('');
-            setOpneScanner(true);
+            setOpenScanner(true);
           } else {
-            alert('CAMERA permission denied');
+            Alert.alert('CAMERA permission denied');
           }
         } catch (err) {
-          alert('Camera permission err', err);
+          Alert.alert('Camera permission error', err.toString());
           console.warn(err);
         }
+      } else {
+        setQrvalue('');
+        setOpenScanner(true);
       }
-      // Calling the camera permission function
-      requestCameraPermission();
-    } else {
-      setQrvalue('');
-      setOpneScanner(true);
-    }
+    };
+
+    requestCameraPermission();
+  }, []);
+
+  const onBarcodeScan = (qrvalue) => {
+    setQrvalue(qrvalue);
+    setOpenScanner(false);
   };
 
   return (
     <View style={styles.container}>
       <AppHeader navigation={navigation} />
       <Text style={styles.description}>카메라로 의약품을 검색하는 화면입니다.</Text>
-      <View style={styles.content}>
-        <CameraScreen
-            showFrame={false}
-            // Show/hide scan frame
+      <View style={styles.cameraContainer}>
+        {openScanner ? (
+          <CameraScreen
+            style={styles.camera}
+            showFrame={true}
             scanBarcode={true}
-            // Can restrict for the QR Code only
             laserColor={'blue'}
-            // Color can be of your choice
             frameColor={'yellow'}
-            // If frame is visible then frame color
             colorForScannerFrame={'black'}
-            // Scanner Frame color
-            onReadCode={(event) =>
-              onBarcodeScan(event.nativeEvent.codeStringValue)
-            }
+            onReadCode={(event) => onBarcodeScan(event.nativeEvent.codeStringValue)}
           />
+        ) : (
+          <Text style={styles.placeholder}>카메라를 준비하고 있습니다...</Text>
+        )}
       </View>
     </View>
   );
@@ -76,40 +72,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  content: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 60,
-    padding: 20,
+  cameraContainer: {
+    flex: 1,
+  },
+  camera: {
+    flex: 1,
+    width: '100%',
   },
   description: {
     fontSize: 20,
     textAlign: 'center',
     paddingTop: 10,
   },
-  text: {
-    flex: 3,
-  },
-  input: {
-    height: 50,
-    borderWidth: 1,
-    padding: 10,
+  placeholder: {
     fontSize: 18,
+    color: '#888',
+    textAlign: 'center',
+    marginTop: 20,
   },
-  search: {
-    flex: 1,
-  },
-  button: {
-    alignItems: 'center',
-  },
-  buttonText: {
-    fontSize: 20,
-    color: '#333',
-  },
-  icon: {
-    height: 40,
-    width: 40,
-  }
 });
 
 export default CameraSearchScreen;
