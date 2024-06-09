@@ -170,7 +170,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cameraContainer: {
-    flex: 1,
+    height: '100%',
+    width: '100%',
   },
   camera: {
     flex: 1,
