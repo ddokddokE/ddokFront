@@ -37,4 +37,6 @@ target 'ddokddokE' do
       # :ccache_enabled => true
     )
   end
+
+  pod 'TextToSpeech', :path => '../node_modules/react-native-tts'
 end
