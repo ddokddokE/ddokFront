@@ -1,19 +1,34 @@
 import { Alert } from "react-native";
 import axios from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Platform } from "react-native";
 
-const host = "http://localhost:8080"
+// 로컬 서버 주소 설정
+const getBaseURL = () => {
+  if (Platform.OS === 'android') {
+    return "http://10.0.2.2:8080"; // Android 에뮬레이터
+  } else {
+    return "http://localhost:8080"; // iOS 시뮬레이터
+  }
+};
+
+const apiClient = axios.create({
+  baseURL: getBaseURL(),
+  timeout: 10000,
+});
 
 export async function getMedicineInfo(name) {
     try {
-        const response = await axios({
-            method: "get",
-            url: host + `/medicine/search?`,
+        console.log(`Request URL: ${apiClient.defaults.baseURL}/medicine/idx`);
+        console.log(`Request Params: ${name}`);
+        
+        const response = await apiClient.get(`/medicine/idxidx`, {
             params: { name }
         });
+        console.log('Response data:', response.data);
         return response.data;
     } catch (err) {
-        const error = err.response.data.error || err.message;
-        Alert.alert(error);
+        console.error('Error:', err);
+        const errorMessage = err.response ? err.response.data.error : err.message;
+        Alert.alert('Error', errorMessage);
     }
 }
